@@ -5,9 +5,6 @@ dotenv.config({
     path: './.env'
 })
 
-console.log(`${process.env.DB_NAME}`);
-
-
 db()
 .then(() => {
     app.listen(process.env.PORT || 8000, () => {
