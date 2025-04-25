@@ -39,7 +39,6 @@ const adminSignUp = asyncHandler(async(req,res)=>{
 
 const generateAccessAndRefreshTokens = async (admindID) =>{ 
     try {
-        
         const Admin = await admin.findById(admindID)
         
         const Accesstoken = Admin.generateAccessToken()
@@ -76,7 +75,6 @@ const adminLogin = asyncHandler(async(req,res)=>{
     }
 
     const temp_admin = loggedAdmin._id
-
     const {Accesstoken, Refreshtoken} =  await generateAccessAndRefreshTokens(temp_admin)
 
     const loggedadmin = await admin.findById(temp_admin).select("-password -Refreshtoken")
