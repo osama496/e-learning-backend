@@ -75,7 +75,7 @@ const addCourseTeacher = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Not authorized");
   }
 
-  const { coursename, description, thumbnailimage } = req.body;
+  const { coursename, description, thumbnailimage, price } = req.body;
 
   if ([coursename, description, thumbnailimage].some((field) => !field || field.trim() === "")) {
     throw new ApiError(400, "All fields are required");
@@ -85,6 +85,7 @@ const addCourseTeacher = asyncHandler(async (req, res) => {
     coursename,
     description,
     thumbnailimage,
+    price, // ✅ Added price here
     enrolledteacher: loggedTeacher._id,
   });
 
@@ -96,6 +97,7 @@ const addCourseTeacher = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(201, { newCourse, loggedTeacher }, "New course created"));
 });
+
 
 
 const updateCourse = asyncHandler(async (req, res) => {

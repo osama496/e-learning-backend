@@ -5,26 +5,51 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import crypto from "crypto"
 import {payment} from "../models/payment.model.js"
 import { Teacher } from "../models/teacher.model.js";
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// const coursePayment = asyncHandler(async(req,res)=>{
+//     const {fees, } = req.body
+
+//     if(!fees){
+//       throw new ApiError(400,"fees is required")
+//     }
+
+//     const options = {
+//         amount: fees,  // amount in the smallest currency unit
+//         currency: "INR",
+//         receipt: "order_rcptid_11"
+//       };
+//       // const order = await instance.orders.create(options)
+
+//       return res
+//       .status(200)
+//       .json( new ApiResponse(200, order,"order fetched"))
+// })
 
 
-const coursePayment = asyncHandler(async(req,res)=>{
-    const {fees, } = req.body
+const coursePayment = asyncHandler(async (req, res) => {
+  const { fees } = req.body;
 
-    if(!fees){
-      throw new ApiError(400,"fees is required")
+  if (!fees) {
+    throw new ApiError(400, "fees is required");
+  }
+
+  const amountInPaisa = fees * 100; // Stripe uses smallest currency unit
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amountInPaisa,
+    currency: "pkr",
+    metadata: {
+      integration_check: "accept_a_payment"
     }
+  });
 
-    const options = {
-        amount: fees,  // amount in the smallest currency unit
-        currency: "INR",
-        receipt: "order_rcptid_11"
-      };
-      // const order = await instance.orders.create(options)
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { clientSecret: paymentIntent.client_secret }, "Stripe Payment Intent created"));
+});
 
-      return res
-      .status(200)
-      .json( new ApiResponse(200, order,"order fetched"))
-})
 
 
 const getkey = asyncHandler(async(req,res)=>{
@@ -69,57 +94,84 @@ const getkey = asyncHandler(async(req,res)=>{
 //   }
 // })
 
-const TEST_MODE = true;
-const coursePaymentConfirmation = asyncHandler(async(req,res)=>{
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  
-  const studentID = req.Student._id;
-  const courseID = req.params.courseID;
 
-  console.log(courseID);
+const coursePaymentConfirmation = asyncHandler(async (req, res) => {
+  const { paymentIntentId } = req.body;
 
-  const body = razorpay_order_id + "|" + razorpay_payment_id;
+  const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-  if (TEST_MODE) {
-    // In test mode, directly create payment without crypto check
+  if (intent.status === "succeeded") {
+    const studentID = req.Student._id;
+    const courseID = req.params.courseID;
+
     const orderDetails = await payment.create({
-      razorpay_order_id: razorpay_order_id || "dummy_order_id",
-      razorpay_payment_id: razorpay_payment_id || "dummy_payment_id",
-      razorpay_signature: razorpay_signature || "dummy_signature",
-      courseID, 
-      studentID,
+      razorpay_order_id: intent.id,
+      razorpay_payment_id: intent.id,
+      razorpay_signature: "stripe_signature_dummy",
+      courseID,
+      studentID
     });
 
     return res
       .status(200)
-      .json(new ApiResponse(200, { orderDetails }, "payment confirmed in test mode"));
-
+      .json(new ApiResponse(200, { orderDetails }, "Payment confirmed"));
   } else {
-    // Real Razorpay Signature Verification
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.KEY_SECRET)
-      .update(body.toString())
-      .digest("hex");
-
-    const isAuthentic = expectedSignature === razorpay_signature;
-
-    if (isAuthentic) {
-      const orderDetails = await payment.create({
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-        courseID, 
-        studentID,
-      });
-
-      return res
-        .status(200)
-        .json(new ApiResponse(200, { orderDetails }, "payment confirmed"));
-    } else {
-      throw new ApiError(400, "payment failed");
-    }
+    throw new ApiError(400, "Payment not successful");
   }
-})
+});
+
+
+// const TEST_MODE = true;
+// const coursePaymentConfirmation = asyncHandler(async(req,res)=>{
+//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  
+//   const studentID = req.Student._id;
+//   const courseID = req.params.courseID;
+
+//   console.log(courseID);
+
+//   const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+//   if (TEST_MODE) {
+//     // In test mode, directly create payment without crypto check
+//     const orderDetails = await payment.create({
+//       razorpay_order_id: razorpay_order_id || "dummy_order_id",
+//       razorpay_payment_id: razorpay_payment_id || "dummy_payment_id",
+//       razorpay_signature: razorpay_signature || "dummy_signature",
+//       courseID, 
+//       studentID,
+//     });
+
+//     return res
+//       .status(200)
+//       .json(new ApiResponse(200, { orderDetails }, "payment confirmed in test mode"));
+
+//   } else {
+//     // Real Razorpay Signature Verification
+//     const expectedSignature = crypto
+//       .createHmac("sha256", process.env.KEY_SECRET)
+//       .update(body.toString())
+//       .digest("hex");
+
+//     const isAuthentic = expectedSignature === razorpay_signature;
+
+//     if (isAuthentic) {
+//       const orderDetails = await payment.create({
+//         razorpay_order_id,
+//         razorpay_payment_id,
+//         razorpay_signature,
+//         courseID, 
+//         studentID,
+//       });
+
+//       return res
+//         .status(200)
+//         .json(new ApiResponse(200, { orderDetails }, "payment confirmed"));
+//     } else {
+//       throw new ApiError(400, "payment failed");
+//     }
+//   }
+// })
 
 
 
