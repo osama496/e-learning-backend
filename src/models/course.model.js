@@ -1,66 +1,66 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const courseSchema= new  mongoose.Schema({
-
-coursename:{
-    type:String,
-    require:true
-},
-
-description: {
+const courseSchema = new mongoose.Schema({
+  coursename: {
     type: String,
-    required: true
-},
+    required: true,
+  },
 
-isapproved: {
+  description: {
+    type: String,
+    required: true,
+  },
+
+  isapproved: {
     type: Boolean,
-    default: false
-},
+    default: false,
+  },
 
-liveClasses: [{
-    title: String,
-    timing: Number,
-    date:Date,
-    link: String,
-    status: {
+  thumbnailimage: {
+    type: String,
+    required: true,
+  },
+
+  liveClasses: [
+    {
+      title: String,
+      link: String,
+      thumbnail: String,
+      description: String,
+      status: {
         type: String,
-        enum: ['upcoming', 'in-progress', 'completed'],
-        default: 'upcoming'
-      }
-  }],
+        enum: ["upcoming", "in-progress", "completed"],
+        default: "upcoming",
+      },
+    },
+  ],
 
-enrolledteacher:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref: "teacher",
-    require:true
-},
-
-enrolledStudent: [{
+  enrolledteacher: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'student' 
-  }],
+    ref: "teacher",
+    required: true,
+  },
 
-schedule: [{
-    day: {
-        type: Number,
-        enum: [0, 1, 2, 3, 4, 5, 6]
+  enrolledStudent: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "student",
+      completedClasses: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "liveClass",
+        },
+      ],
     },
-    starttime: {
-        type: Number,
-        min: 0,
-        max: 24 * 60 
-    },
-    endtime: {
-        type: Number,
-        min: 0,
-        max: 24 * 60 
-    }
-}],
+  ],
 
+  price: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+}, { timestamps: true });
 
+const course = mongoose.model("course", courseSchema);
 
-},{timestamps:true})
-
-const course= mongoose.model('course',courseSchema)
-
-export {course}
+export { course };
