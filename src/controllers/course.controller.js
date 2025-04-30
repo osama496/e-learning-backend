@@ -207,7 +207,7 @@ const addCourseStudent = asyncHandler(async (req, res) => {
         <p style="font-size: 16px;">You can start accessing the course immediately by logging into your account.</p>
         <p style="font-size: 16px;">Best regards,</p>
         <p style="font-size: 16px;"><strong>The Shiksharthee Team</strong></p>
-        <p style="font-size: 14px;">&copy; 2024 Shiksharthee. All rights reserved.</p>
+        <p style="font-size: 14px;">&copy; 2025 Shiksharthee. All rights reserved.</p>
       </body>
     </html>`
   );

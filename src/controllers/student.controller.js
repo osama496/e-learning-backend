@@ -128,6 +128,45 @@ const signup = asyncHandler(async (req, res) =>{
 
 })
 
+
+export const updateStudentProfile = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { Firstname, Lastname, Email } = req.body;
+  
+    if ([Firstname, Lastname, Email].some((field) => !field?.trim())) {
+      throw new ApiError(400, "All fields are required");
+    }
+  
+    const existingStudent = await student.findById(id);
+  
+    if (!existingStudent) {
+      throw new ApiError(404, "Student not found");
+    }
+  
+    // Check if email already used by another student
+    const emailInUse = await student.findOne({ Email });
+    if (emailInUse && emailInUse._id.toString() !== id) {
+      throw new ApiError(400, "Email already in use");
+    }
+  
+    // Check if email is used by a teacher
+    const teacherUsingEmail = await Teacher.findOne({ Email });
+    if (teacherUsingEmail) {
+      throw new ApiError(400, "Email belongs to a teacher");
+    }
+  
+    existingStudent.Firstname = Firstname;
+    existingStudent.Lastname = Lastname;
+    existingStudent.Email = Email;
+  
+    await existingStudent.save();
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, existingStudent, "Student profile updated"));
+  });
+  
+
 const mailVerified = asyncHandler(async(req,res)=>{
         const id = req.query.id;
 

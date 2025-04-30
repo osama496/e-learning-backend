@@ -300,6 +300,81 @@ const teacherdocuments = asyncHandler(async(req, res)=>{
     .json(new ApiResponse(200, teacherDocs, "teacher documents fetched"))
 })
 
+const updateTeacherProfile = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+
+    if (req.teacher._id != id) {
+        throw new ApiError(403, "Unauthorized access");
+    }
+
+    const { Firstname, Lastname, Email } = req.body;
+
+    const updatedTeacher = await Teacher.findByIdAndUpdate(
+        id,
+        { $set: { Firstname, Lastname, Email } },
+        { new: true, runValidators: true }
+    ).select("-Password -Refreshtoken");
+
+    if (!updatedTeacher) {
+        throw new ApiError(404, "Teacher not found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, updatedTeacher, "Profile updated successfully"));
+});
+
+
+const updateTeacherDocuments = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+
+    if (req.teacher._id != id) {
+        throw new ApiError(403, "Unauthorized access");
+    }
+
+    const teacher = await Teacher.findById(id);
+    if (!teacher || !teacher.Teacherdetails) {
+        throw new ApiError(404, "Teacher documents not found");
+    }
+
+    const updateData = {
+        Phone: req.body.Phone,
+        Address: req.body.Address,
+        Experience: req.body.Experience,
+        SecondarySchool: req.body.SecondarySchool,
+        HigherSchool: req.body.HigherSchool,
+        UGcollege: req.body.UGcollege,
+        PGcollege: req.body.PGcollege,
+        SecondaryMarks: req.body.SecondaryMarks,
+        HigherMarks: req.body.HigherMarks,
+        UGmarks: req.body.UGmarks,
+        PGmarks: req.body.PGmarks
+    };
+
+    // Handle optional re-uploads
+    const fileMap = {
+        Aadhaar: req.files?.Aadhaar?.[0]?.path,
+        Secondary: req.files?.Secondary?.[0]?.path,
+        Higher: req.files?.Higher?.[0]?.path,
+        UG: req.files?.UG?.[0]?.path,
+        PG: req.files?.PG?.[0]?.path,
+    };
+
+    for (const [key, path] of Object.entries(fileMap)) {
+        if (path) {
+            const uploaded = await uploadOnCloudinary(path);
+            updateData[key] = uploaded.url;
+        }
+    }
+
+    const updatedDocs = await Teacherdocs.findByIdAndUpdate(
+        teacher.Teacherdetails,
+        { $set: updateData },
+        { new: true, runValidators: true }
+    );
+
+    return res.status(200).json(new ApiResponse(200, updatedDocs, "Documents updated successfully"));
+});
+
+
 const ForgetPassword=asyncHandler(async(req,res)=>{
 
     const { Email } =  req.body
@@ -389,4 +464,4 @@ const ForgetPassword=asyncHandler(async(req,res)=>{
      }
  });
 
-export { signup, mailVerified, login, logout, addTeacherDetails, getTeacher, teacherdocuments,ForgetPassword,ResetPassword};
+export { signup, mailVerified, login,updateTeacherProfile, updateTeacherDocuments, logout, addTeacherDetails, getTeacher, teacherdocuments,ForgetPassword,ResetPassword};

@@ -200,7 +200,7 @@ const approveStudent = asyncHandler(async(req,res)=>{
             <p style="font-size: 16px;">Remarks: ${remarks}</p>
             <p style="font-size: 16px;">Best regards,</p>
             <p style="font-size: 16px;"><strong>The Shiksharthee Team</strong></p>
-            <p style="font-size: 14px;">&copy; 2024 Shiksharthee. All rights reserved.</p>
+            <p style="font-size: 14px;">&copy; 2025 Shiksharthee. All rights reserved.</p>
             </body>
         </html>`
     )
@@ -254,7 +254,7 @@ const approveTeacher = asyncHandler(async(req,res)=>{
             <p style="font-size: 16px;">Remarks: ${remarks}</p>
             <p style="font-size: 16px;">Best regards,</p>
             <p style="font-size: 16px;"><strong>The Shiksharthee Team</strong></p>
-            <p style="font-size: 14px;">&copy; 2024 Shiksharthee. All rights reserved.</p>
+            <p style="font-size: 14px;">&copy; 2025 Shiksharthee. All rights reserved.</p>
             </body>
         </html>`
     )
@@ -486,7 +486,7 @@ const approveCourse = asyncHandler(async(req,res)=>{
                 <p style="font-size: 16px;">Thank you for being a part of our educational community. We look forward to seeing your course make a positive impact on learners around the world.</p>
                 <p style="font-size: 16px;">Best regards,</p>
                 <p style="font-size: 16px;"><strong>The Shiksharthee Team</strong></p>
-                <p style="font-size: 14px;">&copy; 2024 Shiksharthee. All rights reserved.</p>
+                <p style="font-size: 14px;">&copy; 2025 Shiksharthee. All rights reserved.</p>
                 </body>
             </html>
         `)
@@ -509,7 +509,7 @@ const approveCourse = asyncHandler(async(req,res)=>{
                 <p style="font-size: 16px;">Thank you for your understanding and continued commitment to providing quality education.</p>
                 <p style="font-size: 16px;">Best regards,</p>
                 <p style="font-size: 16px;"><strong>The Shiksharthee Team</strong></p>
-                <p style="font-size: 14px;">&copy; 2024 Shiksharthee. All rights reserved.</p>
+                <p style="font-size: 14px;">&copy; 2025 Shiksharthee. All rights reserved.</p>
                 </body>
             </html>
         `)
