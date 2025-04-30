@@ -21,6 +21,7 @@ const getCourse = asyncHandler(async (req, res) => {
 });
 
 
+
 const getcourseTeacher = asyncHandler(async (req, res) => {
 
   const coursename = req.params.coursename;
