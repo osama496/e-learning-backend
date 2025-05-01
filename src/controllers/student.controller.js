@@ -6,6 +6,7 @@ import nodemailer from "nodemailer";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Teacher } from "../models/teacher.model.js";
 import { Sendmail } from "../utils/Nodemailer.js";
+import { course } from "../models/course.model.js";
 
 
 
@@ -58,31 +59,31 @@ const verifyEmail = async (Email, Firstname, createdStudent_id) => {
 
 
 const recommendCoursesForStudent = asyncHandler(async (req, res) => {
-    const studentId = req.student._id;
-  
-    if (!studentId) {
-      throw new ApiError(400, "Student ID is required");
-    }
-  
-    // Find courses student already enrolled in
-    const enrolledCourses = await course.find({ enrolledstudents: studentId }).select("_id");
-  
-    const enrolledCourseIds = enrolledCourses.map((c) => c._id);
-  
-    // Recommend courses that student is NOT enrolled in and are approved
-    const recommendedCourses = await course.find({
-      _id: { $nin: enrolledCourseIds },
-      isapproved: true,
-    }).populate("enrolledteacher", "_id Firstname Lastname");
-  
-    if (!recommendedCourses || recommendedCourses.length === 0) {
-      throw new ApiError(404, "No recommendations found");
-    }
-  
-    return res.status(200).json(
-      new ApiResponse(200, recommendedCourses, "Recommended courses fetched successfully")
-    );
-  });
+  const studentId = req.params;
+
+  if (!studentId) {
+    throw new ApiError(400, "Student ID is required");
+  }
+
+  // Get courses the student is already enrolled in
+  const enrolledCourses = await course.find({ enrolledstudents: studentId }).select("_id");
+
+  const enrolledCourseIds = enrolledCourses.map((c) => c._id.toString());
+
+  // Get only courses the student is NOT enrolled in and that are approved
+  const recommendedCourses = await course.find({
+    _id: { $nin: enrolledCourseIds },
+    isapproved: true,
+  }).populate("enrolledteacher", "_id Firstname Lastname Email");
+
+  if (!recommendedCourses || recommendedCourses.length === 0) {
+    throw new ApiError(404, "No recommendations found");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, recommendedCourses, "Recommended courses fetched successfully")
+  );
+});
   
 
 const generateAccessAndRefreshTokens = async (stdID) =>{ 
