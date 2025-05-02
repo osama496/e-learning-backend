@@ -207,8 +207,8 @@ const addCourseStudent = asyncHandler(async (req, res) => {
         <p style="font-size: 16px; text-align: center;">We are pleased to inform you that your payment for the course has been successfully processed.</p>
         <p style="font-size: 16px;">You can start accessing the course immediately by logging into your account.</p>
         <p style="font-size: 16px;">Best regards,</p>
-        <p style="font-size: 16px;"><strong>The Shiksharthee Team</strong></p>
-        <p style="font-size: 14px;">&copy; 2025 Shiksharthee. All rights reserved.</p>
+        <p style="font-size: 16px;"><strong>The  SkillBridge Team</strong></p>
+        <p style="font-size: 14px;">&copy; 2025  SkillBridge. All rights reserved.</p>
       </body>
     </html>`
   );

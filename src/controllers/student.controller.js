@@ -414,9 +414,9 @@ const forgetPassword = asyncHandler(async (req, res) => {
     const message = ` <p>Dear ${User.Firstname}${User.Lastname},</p>
    <p>We have received a request to reset your password. To proceed, please click on the following link: <a href="${resetToken}" target="_blank">reset your password</a>.</p>
    <p>If the link does not work for any reason, you can copy and paste the following URL into your browser's address bar:</p>
-   <p>Thank you for being a valued member of the Shiksharthee community. If you have any questions or need further assistance, please do not hesitate to contact our support team.</p>
+   <p>Thank you for being a valued member of the  SkillBridge community. If you have any questions or need further assistance, please do not hesitate to contact our support team.</p>
    <p>Best regards,</p>
-   <p>The Shiksharthee Team</p>`
+   <p>The  SkillBridge Team</p>`
 
     try {
 
