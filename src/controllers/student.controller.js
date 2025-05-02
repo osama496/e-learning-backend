@@ -7,6 +7,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Teacher } from "../models/teacher.model.js";
 import { Sendmail } from "../utils/Nodemailer.js";
 import { course } from "../models/course.model.js";
+import axios from "axios";
 
 
 
@@ -58,40 +59,90 @@ const verifyEmail = async (Email, Firstname, createdStudent_id) => {
 
 
 
-const recommendCoursesForStudent = asyncHandler(async (req, res) => {
+// const recommendCoursesForStudent = asyncHandler(async (req, res) => {
 
-    console.log("reqstudent", req.Student._id);
+//     console.log("reqstudent", req.Student._id);
+//     const studentId = req.Student._id;
+
+//     if (!studentId) {
+//         throw new ApiError(400, "Student ID is required");
+//     }
+
+//     // 1. Get all courses
+//     const allCourses = await course.find({ isapproved: true })
+//         .populate("enrolledteacher", "_id Firstname Lastname Email");
+
+//     // 2. Get enrolled courses for the student
+//     const enrolledCourses = await course.find({
+//         enrolledStudent: studentId,
+//         isapproved: true
+//     }).populate("enrolledteacher", "_id Firstname Lastname Email");
+
+//     // 3. Get IDs of enrolled courses
+//     const enrolledCourseIds = enrolledCourses.map(course => course._id.toString());
+
+   
+
+//     return res.status(200).json(
+//         new ApiResponse(200, {
+//             allCourses,
+//             enrolledCourses,
+//         }, "Courses fetched successfully")
+//     );
+// });
+
+
+const recommendCoursesForStudent = asyncHandler(async (req, res) => {
     const studentId = req.Student._id;
 
     if (!studentId) {
         throw new ApiError(400, "Student ID is required");
     }
 
-    // 1. Get all courses
-    const allCourses = await course.find({ isapproved: true })
-        .populate("enrolledteacher", "_id Firstname Lastname Email");
-
-    // 2. Get enrolled courses for the student
+    // Get all approved courses (only for recommendation logic)
+    const allCourses = await course.find({ isapproved: true }).lean();
     const enrolledCourses = await course.find({
         enrolledStudent: studentId,
         isapproved: true
-    }).populate("enrolledteacher", "_id Firstname Lastname Email");
+    }).lean();
 
-    // 3. Get IDs of enrolled courses
-    const enrolledCourseIds = enrolledCourses.map(course => course._id.toString());
+    try {
+        const pythonResponse = await axios.post(
+            `http://127.0.0.1:8000/recommend/${studentId}`,
+            {
+                allCourses: allCourses.map(c => ({ _id: c._id, title: c.coursename })),
+                enrolledCourses: enrolledCourses.map(c => ({ _id: c._id, title: c.coursename }))
+            },
+            {
+                headers: {
+                    Authorization: req.headers.authorization || ""
+                }
+            }
+        );
 
-    // 4. Get recommended courses (not enrolled)
-    const recommendedCourses = allCourses.filter(
-        course => !enrolledCourseIds.includes(course._id.toString())
-    );
+        const recommended = pythonResponse.data.recommended || [];
 
-    return res.status(200).json(
-        new ApiResponse(200, {
-            allCourses,
-            enrolledCourses,
-            recommendedCourses
-        }, "Courses fetched successfully")
-    );
+        // Extract only recommended course IDs
+        const recommendedIds = recommended.map(item => item._id);
+
+        // Fetch full details of recommended courses
+        const recommendedCourses = await course.find({
+            _id: { $in: recommendedIds },
+            isapproved: true
+        }).populate("enrolledteacher", "_id Firstname Lastname Email");
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                recommendedCourses
+            }, "Recommended courses fetched successfully")
+        );
+
+    } catch (error) {
+        console.error("Error from Python API:", error.message);
+        return res.status(500).json(
+            new ApiError(500, "Error generating recommendations")
+        );
+    }
 });
 
 
